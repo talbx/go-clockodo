@@ -1,4 +1,4 @@
-package util
+package intercept
 
 import (
 	"fmt"
@@ -6,11 +6,26 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Interceptor interface {
+	Intercept()
+}
+
+type ConfigReaderInterceptor struct{}
+
+var ClockodoConfig GoClockodoConfig
+
+func (i ConfigReaderInterceptor) Intercept() {
+	ReadConfig(&ClockodoConfig)
+}
+
 type GoClockodoConfig struct {
 	ApiKey string
 	ApiUser string
+	TestCustomer int
+	MainCustomer int
+	TestService int
+	TestProject int
 }
-
 
 func ReadConfig(config *GoClockodoConfig) {
 	viper.SetConfigType("yaml") // or viper.SetConfigType("YAML")
@@ -23,6 +38,7 @@ func ReadConfig(config *GoClockodoConfig) {
 	}
 	config.ApiKey = viper.GetString("apiKey")
 	config.ApiUser = viper.GetString("apiUser")
-	fmt.Println(viper.Get("apiKey")) // this would be "steve"
-	fmt.Println(viper.Get("apiUser")) // this would be "steve"
+	config.TestCustomer = viper.GetInt("testCustomerId")
+	config.TestService = viper.GetInt("testServiceId")
+	config.TestProject = viper.GetInt("testProjectId")
 }

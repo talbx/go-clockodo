@@ -186,7 +186,7 @@ Temporary Items
 
 # Local History for Visual Studio Code
 .history/
-
+config.yaml
 # Built Visual Studio Code Extensions
 *.vsix
 
