@@ -4,7 +4,7 @@ import (
 	"github.com/talbx/go-clockodo/cmd/intercept"
 )
 
-type CommandFactory interface {
+type Factory interface {
 	Create(cmd string) Command
 }
 
@@ -19,9 +19,9 @@ func (factory ClockodoCommandFactory) Create(cmd string) Command {
 	return TimeCommand{}
 }
 
-var instance CommandFactory
+var instance Factory
 
-func CreateCommandFactory() *CommandFactory {
+func CreateCommandFactory() *Factory {
 	if instance == nil {
 		instance = ClockodoCommandFactory{}
 	}

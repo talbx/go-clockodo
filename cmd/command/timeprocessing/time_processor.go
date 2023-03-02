@@ -2,7 +2,6 @@ package timeprocessing
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -12,21 +11,6 @@ import (
 
 type TimeProcessor interface {
 	Process(round bool)
-}
-
-type TimeProcessorFactory struct{}
-
-func (t TimeProcessorFactory) CreateTimeProcessor() TimeProcessor {
-	return WeekProcessor{}
-}
-
-var instance *TimeProcessorFactory
-
-func CreateCommandFactory() *TimeProcessorFactory {
-	if instance == nil {
-		instance = &TimeProcessorFactory{}
-	}
-	return instance
 }
 
 func SOB(t time.Time) time.Time {
@@ -42,7 +26,7 @@ func d(t time.Time, h int, m int) time.Time {
 	return time.Date(year, month, day, h, m, 0, 0, t.Location())
 }
 
-func DurationToHM(duration int)(hours int, minutes int){
+func DurationToHM(duration int) (hours int, minutes int) {
 	h, _ := time.ParseDuration(fmt.Sprintf("%ds", duration))
 
 	if h.Minutes() > 0 {
@@ -50,27 +34,6 @@ func DurationToHM(duration int)(hours int, minutes int){
 		minutes = int(h.Minutes()) % 60
 	}
 	return
-}
-
-func CreateOutput(hours int, minutes int, tasks *string, round bool, today bool) {
-	var roundMsg string = ""
-	if round {
-		hours, minutes = Round(hours, minutes)
-		roundMsg = "The time is rounded on 15m basis."
-	}
-	fulltime := fmt.Sprintf("%s:%s", AddLeadingZero(hours), AddLeadingZero(minutes))
-
-	if today {
-		timeMsg := "You worked %s today! %s"
-		log.Printf(timeMsg, fulltime, roundMsg)
-	} else {
-		timeMsg := "You worked %s yesterday! %s"
-		log.Printf(timeMsg, fulltime, roundMsg)
-	}
-
-	if tasks != nil {
-		log.Printf("Your tasks during that time were %s\n", *tasks)
-	}
 }
 
 func AddLeadingZero(num int) string {
@@ -83,33 +46,16 @@ func AddLeadingZero(num int) string {
 func Round(h int, m int) (int, int) {
 	r := m % 15
 	if r == 0 {
-		return logTimes(h, m, h, m)
+		return h, m
 	}
 	if r < 8 {
-		return logTimes(h, m-r, h, m)
+		return h, m - r
 	}
 	x := m + (15 - r)
 	if x == 60 {
-		return logTimes(h+1, 0, h, m)
+		return h + 1, 0
 	}
-	return logTimes(h, x, h, m)
-}
-
-func logTimes(h int, m int, ih int, im int) (int, int) {
-	//fmt.Printf("Rounded Input %d:%d to %d:%d\n", ih, im, h, m)
 	return h, m
-}
-
-func RemoveDuplicateStr(strSlice []string) []string {
-	allKeys := make(map[string]bool)
-	list := []string{}
-	for _, item := range strSlice {
-		if _, value := allKeys[item]; !value && item != "" && item != " " {
-			allKeys[item] = true
-			list = append(list, item)
-		}
-	}
-	return list
 }
 
 func ProcessClock(clock *util.ClockResponse) (hours int, minutes int) {

@@ -10,7 +10,6 @@ import (
 type TimeCommand struct{}
 
 func (cmd TimeCommand) Execute() {
-	var processor timeprocessing.TimeProcessor = timeprocessing.CreateCommandFactory().CreateTimeProcessor()
 	round, _ := util.GetFlags().GetBool("round")
-	processor.Process(round)
+	timeprocessing.WeekProcessor{}.Process(round)
 }

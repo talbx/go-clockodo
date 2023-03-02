@@ -22,7 +22,7 @@ type StartPayload struct {
 	Description string `json:"text"`
 }
 
-func getAndDelete[R TimeEntriesResponse | ClockResponse | Customer, P StartPayload](requestMethod string, endpoint string, strukt *R) int {
+func getAndDelete[R TimeEntriesResponse | ClockResponse | Customer](requestMethod string, endpoint string, strukt *R) int {
 	client := &http.Client{}
 
 	config := intercept.ClockodoConfig
@@ -41,7 +41,10 @@ func getAndDelete[R TimeEntriesResponse | ClockResponse | Customer, P StartPaylo
 	}
 
 	if nil != strukt {
-		json.NewDecoder(resp.Body).Decode(strukt)
+		err := json.NewDecoder(resp.Body).Decode(strukt)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return resp.StatusCode
