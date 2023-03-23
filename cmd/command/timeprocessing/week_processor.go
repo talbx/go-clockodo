@@ -2,48 +2,76 @@ package timeprocessing
 
 import (
 	"fmt"
-	"log"
+	"github.com/talbx/go-clockodo/pkg/concurrent"
+	. "github.com/talbx/go-clockodo/pkg/model"
+	. "github.com/talbx/go-clockodo/pkg/util"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 
-	"github.com/talbx/go-clockodo/cmd/util"
 	"golang.org/x/exp/slices"
 )
 
 type WeekProcessor struct{}
 
-func (p WeekProcessor) Process(bool) {
+func (p WeekProcessor) Process(last int) error {
+
+	SugaredLogger.Infof("last %v\n", last)
+	monday, sunday := findStartAndFinish(last)
 	var entriesRoot = "v2/entries"
 
-	now := time.Now()
-	monday := getMonday(now)
-	timeUntil := EOB(now).Format("2006-01-02T15:04:05Z")
-	var repo util.TimeEntriesResponse
-	query := fmt.Sprintf("%s?time_since=%s&time_until=%s", entriesRoot, monday, timeUntil)
-	util.CallApi(query, &repo)
+	var repo TimeEntriesResponse
+	query := fmt.Sprintf("%s?time_since=%s&time_until=%s", entriesRoot, monday, sunday)
+	_, err := CallApi(query, &repo)
 
-	mappy := util.GroupEntriesByDay(repo)
+	if err != nil {
+		SugaredLogger.Fatal(err)
+	}
+
 	custIds := extractCustomerIdsFromTimeEntries(repo)
-	mappyNew := util.GroupDayEntriesByCustomer(mappy, custIds)
-	veryNewMap := enhanceMapWithCustomerNames(mappyNew)
-	clo := getCurrentClock()
+	dayEntriesAggregator := concurrent.ConcurrentDayEntriesAggregator{repo}
+	dayEntries := dayEntriesAggregator.Aggregate()
+
+	dayEntriesByCustomerAggregator := concurrent.ConcurrentDayEntriesByCustomerAggregator{dayEntries, custIds}
+	groupedDayEntries := dayEntriesByCustomerAggregator.Aggregate()
+
+	enhancer := concurrent.ConcurrentCustomerNameEnhancer{*groupedDayEntries}
+	result := enhancer.Aggregate()
+	clo, err := getCurrentClock()
+
+	if err != nil {
+		SugaredLogger.Fatal(err)
+	}
 
 	//fmt.Printf("%v+", c2s)
-	Output(veryNewMap, clo)
+	Output(*result, clo)
+	return nil
 }
 
-func getCurrentClock() util.ClockResponse {
+func findStartAndFinish(last int) (string, string) {
+	if last == 0 {
+		return getMonday(time.Now()), getSunday(time.Now())
+	}
+	now := time.Now().AddDate(0, 0, -(7 * last))
+
+	fmt.Println(now.String())
+	monday := getMonday(now)
+	sunday := getSunday(now)
+	return monday, sunday
+}
+
+func getCurrentClock() (ClockResponse, error) {
 	var currentClock = "v2/clock"
-	var clo util.ClockResponse
-	util.CallApi(currentClock, &clo)
-	return clo
+	var clo ClockResponse
+	_, err := CallApi(currentClock, &clo)
+	return clo, err
 }
 
-func extractCustomerIdsFromTimeEntries(repo util.TimeEntriesResponse) []int {
+func extractCustomerIdsFromTimeEntries(repo TimeEntriesResponse) []int {
 	custIds := make([]int, 0)
 	for _, e := range repo.Entries {
 		if !slices.Contains(custIds, e.CustomerId) {
@@ -53,39 +81,8 @@ func extractCustomerIdsFromTimeEntries(repo util.TimeEntriesResponse) []int {
 	return custIds
 }
 
-func enhanceMapWithCustomerNames(mappyNew map[time.Weekday][]util.DayByCustomer) map[time.Weekday][]util.DayByCustomer {
-	cache := util.CustomerNameCache{}
-
-	veryNewMap := make(map[time.Weekday][]util.DayByCustomer)
-
-	// for every weekday in that map
-	for k := range mappyNew {
-		channel := make(chan util.DayByCustomer)
-
-		// go over every task entry
-		for _, customerDay := range mappyNew[k] {
-			// and fetch its customerName, publish it to a weekday-group channel
-			go getAndAddCustomerNamesToEntries(customerDay, cache, channel)
-		}
-
-		// collect all updated task entries for each week day
-		resultList := make([]util.DayByCustomer, 0)
-		for i := 0; i < len(mappyNew[k]); i++ {
-			val := <-channel
-			resultList = append(resultList, val)
-		}
-		veryNewMap[k] = resultList
-	}
-	return veryNewMap
-}
-
-func getAndAddCustomerNamesToEntries(v util.DayByCustomer, cache util.Cache, c1 chan util.DayByCustomer) {
-	v.Customer = cache.Get(v.CustomerId)
-	c1 <- v
-}
-
-func sortWeekdayMap(mappy map[time.Weekday][]util.DayByCustomer) map[time.Weekday][]util.DayByCustomer {
-	nm := make(map[time.Weekday][]util.DayByCustomer)
+func sortWeekdayMap(mappy map[time.Weekday][]DayByCustomer) map[time.Weekday][]DayByCustomer {
+	nm := make(map[time.Weekday][]DayByCustomer)
 
 	nm[time.Monday] = mappy[time.Monday]
 	nm[time.Tuesday] = mappy[time.Tuesday]
@@ -97,15 +94,33 @@ func sortWeekdayMap(mappy map[time.Weekday][]util.DayByCustomer) map[time.Weekda
 	return nm
 }
 
-func Output(mappy map[time.Weekday][]util.DayByCustomer, clock util.ClockResponse) {
+var weekDays = []time.Weekday{time.Monday, time.Tuesday, time.Wednesday, time.Thursday, time.Friday, time.Saturday, time.Sunday}
 
+func alterTime(entry *DayByCustomer) {
+	var hs, m = 0, 0
+	if strings.Contains(entry.AggregatedTime, "h") {
+		hRest := strings.Split(entry.AggregatedTime, "h")
+		mRest := strings.Split(hRest[1], "m")
+		hs, _ = strconv.Atoi(hRest[0])
+		m, _ = strconv.Atoi(mRest[0])
+
+	} else if strings.Contains(entry.AggregatedTime, "m") {
+		mRest := strings.Split(entry.AggregatedTime, "m")
+		m, _ = strconv.Atoi(mRest[0])
+	}
+	r1, r2 := Round(hs, m)
+	entry.AggregatedTime = fmt.Sprintf("(%v:%v) - %v", r1, r2, entry.AggregatedTime)
+}
+
+func Output(mappy map[time.Weekday][]DayByCustomer, clock ClockResponse) {
 	for _, v := range mappy {
 		sort.Slice(v[:], func(i, j int) bool {
 			return v[i].Customer < v[j].Customer
 		})
 	}
 
-	sortedMappy := sortWeekdayMap(mappy)
+	//sortedMappy := sortWeekdayMap(mappy)
+	sortedMappy := mappy
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
@@ -115,8 +130,9 @@ func Output(mappy map[time.Weekday][]util.DayByCustomer, clock util.ClockRespons
 	taskCount := 0
 	tt := 0
 
-	for key := range sortedMappy {
+	for _, key := range weekDays {
 		for _, entry := range sortedMappy[key] {
+			alterTime(&entry)
 			taskCount += len(strings.Split(entry.AggregatedTasks, ","))
 			tt += entry.TotalTime
 			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, entry.AggregatedTime}, rowConfigAutoMerge)
@@ -139,7 +155,7 @@ func Output(mappy map[time.Weekday][]util.DayByCustomer, clock util.ClockRespons
 	t.Render()
 
 	h, m := ProcessClock(&clock)
-	log.Printf("Also, you have a task running for %vh:%vm right now.\n", h, m)
+	SugaredLogger.Infof("Also, you have a task running for %vh:%vm right now.\n", h, m)
 }
 
 func getMonday(t time.Time) string {
@@ -147,4 +163,11 @@ func getMonday(t time.Time) string {
 		return SOB(t).Format("2006-01-02T15:04:05Z")
 	}
 	return getMonday(t.AddDate(0, 0, -1))
+}
+
+func getSunday(t time.Time) string {
+	if t.Weekday() == time.Sunday {
+		return EOB(t).Format("2006-01-02T15:04:05Z")
+	}
+	return getSunday(t.AddDate(0, 0, 1))
 }

@@ -1,11 +1,12 @@
 package command
 
 import (
-	"github.com/talbx/go-clockodo/cmd/intercept"
+	"github.com/talbx/go-clockodo/cmd/command/timeprocessing"
+	"github.com/talbx/go-clockodo/pkg/intercept"
 )
 
 type Factory interface {
-	Create(cmd string) Command
+	Create(cmd string) timeprocessing.TimeProcessor
 }
 
 type Command interface {
@@ -14,9 +15,9 @@ type Command interface {
 
 type ClockodoCommandFactory struct{}
 
-func (factory ClockodoCommandFactory) Create(cmd string) Command {
+func (factory ClockodoCommandFactory) Create(cmd string) timeprocessing.TimeProcessor {
 	intercept.ConfigReaderInterceptor{}.Intercept()
-	return TimeCommand{}
+	return timeprocessing.WeekProcessor{}
 }
 
 var instance Factory

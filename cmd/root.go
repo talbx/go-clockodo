@@ -1,15 +1,17 @@
 package cmd
 
 import (
+	"github.com/talbx/go-clockodo/pkg/util"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/talbx/go-clockodo/cmd/command"
-	"github.com/talbx/go-clockodo/cmd/util"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "go-clockodo",
+	Run:   Process,
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -27,9 +29,20 @@ func Execute() {
 }
 
 func Process(cmd *cobra.Command, args []string) {
+	s := time.Now()
 	util.StoreFlags(cmd.Flags())
 	var factory = *command.CreateCommandFactory()
-	factory.Create(cmd.Use).Execute()
+	util.SugaredLogger.Infof("[CMD] processing command %v", cmd.Use)
+	last, err := cmd.Flags().GetInt("last")
+	if err != nil {
+		util.SugaredLogger.Fatal(err)
+	}
+	err = factory.Create(cmd.Use).Process(last)
+	if err != nil {
+		util.SugaredLogger.Fatal(err)
+	}
+	e := time.Now()
+	util.SugaredLogger.Infof("[CMD] the process is done and took %vms", e.Sub(s).Milliseconds())
 }
 
 func init() {

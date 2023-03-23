@@ -2,8 +2,7 @@ package timeprocessing
 
 import (
 	"github.com/magiconair/properties/assert"
-	"github.com/talbx/go-clockodo/cmd/util"
-	"log"
+	"github.com/talbx/go-clockodo/pkg/model"
 	"strconv"
 	"testing"
 	"time"
@@ -41,8 +40,6 @@ func TestEOB(t *testing.T) {
 	// when
 	eob := EOB(now)
 
-	log.Println(eob)
-
 	// then
 	assert.Equal(t, eob.Hour(), 23)
 	assert.Equal(t, eob.Minute(), 59)
@@ -51,15 +48,13 @@ func TestEOB(t *testing.T) {
 
 func TestProcessClock(t *testing.T) {
 	type args struct {
-		clock *util.ClockResponse
+		clock *model.ClockResponse
 	}
-	tests := []struct {
+	var tests []struct {
 		name        string
 		args        args
 		wantHours   int
 		wantMinutes int
-	}{
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -83,6 +78,7 @@ func TestRound(t *testing.T) {
 		{23, 45, 23, 45},
 		{23, 52, 23, 45},
 		{23, 53, 24, 0},
+		{8, 29, 8, 30},
 	}
 
 	for _, tt := range testingTable {
@@ -98,8 +94,6 @@ func TestSOB(t *testing.T) {
 
 	// when
 	eob := SOB(now)
-
-	log.Println(eob)
 
 	// then
 	assert.Equal(t, eob.Hour(), 0)

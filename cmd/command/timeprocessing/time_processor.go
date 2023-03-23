@@ -2,15 +2,14 @@ package timeprocessing
 
 import (
 	"fmt"
+	"github.com/talbx/go-clockodo/pkg/model"
 	"math"
 	"strconv"
 	"time"
-
-	"github.com/talbx/go-clockodo/cmd/util"
 )
 
 type TimeProcessor interface {
-	Process(round bool)
+	Process(last int) error
 }
 
 func SOB(t time.Time) time.Time {
@@ -55,10 +54,10 @@ func Round(h int, m int) (int, int) {
 	if x == 60 {
 		return h + 1, 0
 	}
-	return h, m
+	return h, x
 }
 
-func ProcessClock(clock *util.ClockResponse) (hours int, minutes int) {
+func ProcessClock(clock *model.ClockResponse) (hours int, minutes int) {
 	// running clock
 	if clock.Running.RunningSince != "" && clock.Running.RunningSince > "0" {
 		t, _ := time.Parse("2006-01-02T15:04:05Z", clock.Running.RunningSince)

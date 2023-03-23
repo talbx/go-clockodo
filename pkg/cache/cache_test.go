@@ -1,4 +1,4 @@
-package util
+package cache
 
 import (
 	"github.com/magiconair/properties/assert"

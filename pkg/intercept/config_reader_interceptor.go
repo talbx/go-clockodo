@@ -2,8 +2,8 @@ package intercept
 
 import (
 	"fmt"
-
 	"github.com/spf13/viper"
+	"github.com/talbx/go-clockodo/pkg/model"
 )
 
 type Interceptor interface {
@@ -12,22 +12,13 @@ type Interceptor interface {
 
 type ConfigReaderInterceptor struct{}
 
-var ClockodoConfig GoClockodoConfig
+var ClockodoConfig model.GoClockodoConfig
 
 func (i ConfigReaderInterceptor) Intercept() {
 	ReadConfig(&ClockodoConfig)
 }
 
-type GoClockodoConfig struct {
-	ApiKey string
-	ApiUser string
-	TestCustomer int
-	MainCustomer int
-	TestService int
-	TestProject int
-}
-
-func ReadConfig(config *GoClockodoConfig) {
+func ReadConfig(config *model.GoClockodoConfig) {
 	viper.SetConfigType("yaml") // or viper.SetConfigType("YAML")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -38,7 +29,4 @@ func ReadConfig(config *GoClockodoConfig) {
 	}
 	config.ApiKey = viper.GetString("apiKey")
 	config.ApiUser = viper.GetString("apiUser")
-	config.TestCustomer = viper.GetInt("testCustomerId")
-	config.TestService = viper.GetInt("testServiceId")
-	config.TestProject = viper.GetInt("testProjectId")
 }
