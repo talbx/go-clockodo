@@ -42,8 +42,8 @@ func tryfunc(w time.Weekday, v []TimeEntry, wg *sync.WaitGroup, m *TimeEntrySync
 		h, _ := time.ParseDuration(fmt.Sprintf("%ds", dbc.TotalTime))
 		dbc.AggregatedTime = h.String()
 		m.AppendNonExistent(w, dbc)
-		wg.Done()
 	}
+	wg.Done()
 }
 
 func addUpTimeAndTasks(v []TimeEntry, customerId int, dbc *DayByCustomer) {

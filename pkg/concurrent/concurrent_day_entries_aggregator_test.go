@@ -3,12 +3,13 @@ package concurrent
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/talbx/go-clockodo/pkg/model"
+	"github.com/talbx/go-clockodo/pkg/util"
 	"testing"
 	"time"
 )
 
 func TestGroupEntriesByDay(t *testing.T) {
-
+	util.CreateSugaredLogger()
 	timeEntry1 := model.TimeEntry{
 		// monday
 		StartTime: "2023-01-02T15:04:05Z",
