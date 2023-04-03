@@ -33,13 +33,13 @@ func (p WeekProcessor) Process(last int) error {
 	}
 
 	custIds := extractCustomerIdsFromTimeEntries(repo)
-	dayEntriesAggregator := concurrent.ConcurrentDayEntriesAggregator{repo}
+	dayEntriesAggregator := concurrent.ConcurrentDayEntriesAggregator{TimeEntries: repo}
 	dayEntries := dayEntriesAggregator.Aggregate()
 
-	dayEntriesByCustomerAggregator := concurrent.ConcurrentDayEntriesByCustomerAggregator{dayEntries, custIds}
+	dayEntriesByCustomerAggregator := concurrent.ConcurrentDayEntriesByCustomerAggregator{TimeEntries: dayEntries, CustomerIds: custIds}
 	groupedDayEntries := dayEntriesByCustomerAggregator.Aggregate()
 
-	enhancer := concurrent.ConcurrentCustomerNameEnhancer{*groupedDayEntries}
+	enhancer := concurrent.ConcurrentCustomerNameEnhancer{TimeEntries: *groupedDayEntries}
 	result := enhancer.Aggregate()
 	clo, err := getCurrentClock()
 

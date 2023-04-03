@@ -1,11 +1,12 @@
 package timeprocessing
 
 import (
-	"github.com/magiconair/properties/assert"
-	"github.com/talbx/go-clockodo/pkg/model"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/magiconair/properties/assert"
+	"github.com/talbx/go-clockodo/pkg/model"
 )
 
 func TestAddLeadingZero(t *testing.T) {

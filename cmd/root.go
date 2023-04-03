@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/talbx/go-clockodo/pkg/util"
 	"os"
 	"time"
+
+	"github.com/talbx/go-clockodo/pkg/util"
 
 	"github.com/spf13/cobra"
 	"github.com/talbx/go-clockodo/cmd/command"
@@ -21,7 +22,10 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 }
 
+
+
 func Execute() {
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "use verbose to show more log output")
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -31,12 +35,17 @@ func Execute() {
 func Process(cmd *cobra.Command, args []string) {
 	s := time.Now()
 	util.StoreFlags(cmd.Flags())
+	util.CreateSugaredLogger()
 	var factory = *command.CreateCommandFactory()
 	util.SugaredLogger.Infof("[CMD] processing command %v", cmd.Use)
 	last, err := cmd.Flags().GetInt("last")
 	if err != nil {
-		util.SugaredLogger.Fatal(err)
+		
+		util.SugaredLogger.Warn("No >last< param provided. Will use default >l0<")
+		last = 0
 	}
+	verbose, err := cmd.Flags().GetBool("verbose")
+	util.SugaredLogger.Warnf("loglevel set to verbose: %v", verbose)
 	err = factory.Create(cmd.Use).Process(last)
 	if err != nil {
 		util.SugaredLogger.Fatal(err)
