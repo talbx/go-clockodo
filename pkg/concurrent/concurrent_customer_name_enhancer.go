@@ -3,16 +3,15 @@ package concurrent
 import (
 	. "github.com/talbx/go-clockodo/pkg/cache"
 	. "github.com/talbx/go-clockodo/pkg/model"
-	"time"
 )
 
 type ConcurrentCustomerNameEnhancer struct {
-	TimeEntries map[time.Weekday][]DayByCustomer
+	TimeEntries map[string][]DayByCustomer
 }
 
-func (c ConcurrentCustomerNameEnhancer) Aggregate() *map[time.Weekday][]DayByCustomer {
+func (c ConcurrentCustomerNameEnhancer) Aggregate() *map[string][]DayByCustomer {
 	kache := CreateCache()
-	veryNewMap := make(map[time.Weekday][]DayByCustomer)
+	veryNewMap := make(map[string][]DayByCustomer)
 
 	// for every weekday in that map
 	for k := range c.TimeEntries {

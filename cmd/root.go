@@ -25,7 +25,7 @@ to quickly create a Cobra application.`,
 
 
 func Execute() {
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "use verbose to show more log output")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "enable verbose logging")
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -46,7 +46,7 @@ func Process(cmd *cobra.Command, args []string) {
 	}
 	verbose, err := cmd.Flags().GetBool("verbose")
 	util.SugaredLogger.Warnf("loglevel set to verbose: %v", verbose)
-	err = factory.Create(cmd.Use).Process(last)
+	err = factory.Create(cmd.Use).Process(cmd.Use, last)
 	if err != nil {
 		util.SugaredLogger.Fatal(err)
 	}

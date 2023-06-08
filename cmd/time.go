@@ -5,8 +5,8 @@ import (
 )
 
 var timeCmd = &cobra.Command{
-	Use:   "time",
-	Short: "shows your clocked time",
+	Use:   "week",
+	Short: "shows your clocked time for the current week",
 	Run:   Process,
 }
 

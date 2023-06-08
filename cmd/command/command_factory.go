@@ -27,7 +27,7 @@ func (factory ClockodoCommandFactory) Create(cmd string) timeprocessing.TimeProc
 	we, _ := util.GetFlags().GetBool("withEarnings")
 	util.SugaredLogger.Infof("with earnings %v", we)
 	intercept.ClockodoConfig.WithRevenue = we
-	util.SugaredLogger.Warnf("%+v", intercept.ClockodoConfig)
+	util.SugaredLogger.Infof("%+v", intercept.ClockodoConfig)
 	return timeprocessing.WeekProcessor{}
 }
 

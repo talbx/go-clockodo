@@ -10,11 +10,11 @@ import (
 )
 
 type ConcurrentDayEntriesByCustomerAggregator struct {
-	TimeEntries *map[time.Weekday][]TimeEntry
+	TimeEntries *map[string][]TimeEntry
 	CustomerIds []int
 }
 
-func (c ConcurrentDayEntriesByCustomerAggregator) Aggregate() *map[time.Weekday][]DayByCustomer {
+func (c ConcurrentDayEntriesByCustomerAggregator) Aggregate() *map[string][]DayByCustomer {
 	var mappyNew = CreateDBC()
 	for _, customerId := range c.CustomerIds {
 		p_cdbc(c.TimeEntries, customerId, mappyNew)
@@ -22,7 +22,7 @@ func (c ConcurrentDayEntriesByCustomerAggregator) Aggregate() *map[time.Weekday]
 	return mappyNew.Get()
 }
 
-func p_cdbc(mappy *map[time.Weekday][]TimeEntry, customerId int, syncMap *TimeEntrySyncMap[DayByCustomer]) {
+func p_cdbc(mappy *map[string][]TimeEntry, customerId int, syncMap *TimeEntrySyncMap[DayByCustomer]) {
 	wg := sync.WaitGroup{}
 	for w, v := range *mappy {
 		wg.Add(1)
@@ -33,7 +33,7 @@ func p_cdbc(mappy *map[time.Weekday][]TimeEntry, customerId int, syncMap *TimeEn
 	util.SugaredLogger.Infof("[CreateDayByCustomer] done rebuilding models\n")
 }
 
-func tryfunc(w time.Weekday, v []TimeEntry, wg *sync.WaitGroup, m *TimeEntrySyncMap[DayByCustomer], customerId int) {
+func tryfunc(w string, v []TimeEntry, wg *sync.WaitGroup, m *TimeEntrySyncMap[DayByCustomer], customerId int) {
 	dbc := DayByCustomer{CustomerId: customerId}
 	addUpTimeAndTasks(v, customerId, &dbc)
 	if dbc.Tasks != "" {
