@@ -2,14 +2,18 @@ package timeprocessing
 
 import (
 	"fmt"
-	"github.com/talbx/go-clockodo/pkg/concurrent"
-	. "github.com/talbx/go-clockodo/pkg/model"
-	. "github.com/talbx/go-clockodo/pkg/util"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Rhymond/go-money"
+	. "github.com/talbx/go-clockodo/cmd/command/cashprocessing"
+	"github.com/talbx/go-clockodo/pkg/concurrent"
+	"github.com/talbx/go-clockodo/pkg/intercept"
+	. "github.com/talbx/go-clockodo/pkg/model"
+	. "github.com/talbx/go-clockodo/pkg/util"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 
@@ -109,7 +113,7 @@ func alterTime(entry *DayByCustomer) {
 		m, _ = strconv.Atoi(mRest[0])
 	}
 	r1, r2 := Round(hs, m)
-	entry.AggregatedTime = fmt.Sprintf("(%v:%v) - %v", r1, r2, entry.AggregatedTime)
+	entry.RoundedTime = fmt.Sprintf("%v:%v", r1,r2)
 }
 
 func Output(mappy map[time.Weekday][]DayByCustomer, clock ClockResponse) {
@@ -124,18 +128,23 @@ func Output(mappy map[time.Weekday][]DayByCustomer, clock ClockResponse) {
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"#", "ID", "Customer", "Tasks", "Times"})
+	t.AppendHeader(table.Row{"#", "ID", "Customer", "Tasks", "Times", "Revenue"})
 	rowConfigAutoMerge := table.RowConfig{AutoMerge: true}
 
 	taskCount := 0
 	tt := 0
-
+	totalRevenue := money.New(0,money.EUR)
 	for _, key := range weekDays {
 		for _, entry := range sortedMappy[key] {
 			alterTime(&entry)
+			entry.AggregatedRevenue = money.New(0,money.EUR)
+			if intercept.ClockodoConfig.WithRevenue {
+				CashProcess(&entry)
+				totalRevenue, _ = totalRevenue.Add(entry.AggregatedRevenue)
+			}
 			taskCount += len(strings.Split(entry.AggregatedTasks, ","))
 			tt += entry.TotalTime
-			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, entry.AggregatedTime}, rowConfigAutoMerge)
+			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, fmt.Sprintf("(%v) - %v", entry.RoundedTime, entry.AggregatedTime), entry.AggregatedRevenue.Display()}, rowConfigAutoMerge)
 			t.AppendSeparator()
 		}
 	}
@@ -147,11 +156,17 @@ func Output(mappy map[time.Weekday][]DayByCustomer, clock ClockResponse) {
 		{Number: 4, AutoMerge: true},
 		{Number: 5, AutoMerge: true},
 		{Number: 6, AutoMerge: true},
+		{Number: 7, AutoMerge: true},
 	})
+
+	if intercept.ClockodoConfig.WithRevenue && intercept.ClockodoConfig.Revenue.RevenueStyle == "AN" {
+		RevenueToANRevenue(totalRevenue)
+	}
+
 	th, tm := DurationToHM(tt)
 	t.AppendSeparator()
 	t.SetStyle(table.StyleLight)
-	t.AppendFooter(table.Row{"TOTAL", "", "", fmt.Sprintf("Total tasks: %v", taskCount), fmt.Sprintf("%v:%v", AddLeadingZero(th), AddLeadingZero(tm))})
+	t.AppendFooter(table.Row{"TOTAL", "", "", fmt.Sprintf("Total tasks: %v", taskCount), fmt.Sprintf("%v:%v", AddLeadingZero(th), AddLeadingZero(tm)), totalRevenue.Display()})
 	t.Render()
 
 	h, m := ProcessClock(&clock)
