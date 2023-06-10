@@ -28,9 +28,9 @@ func p_cdbc(mappy *map[string][]TimeEntry, customerId int, syncMap *TimeEntrySyn
 		wg.Add(1)
 		go tryfunc(w, v, &wg, syncMap, customerId)
 	}
-	util.SugaredLogger.Infof("[CreateDayByCustomer] using %v worker threads to rebuild models\n", len(*mappy))
+	util.SugaredLogger.Debugf("[CreateDayByCustomer] using %v worker threads to rebuild models\n", len(*mappy))
 	wg.Wait()
-	util.SugaredLogger.Infof("[CreateDayByCustomer] done rebuilding models\n")
+	util.SugaredLogger.Debugf("[CreateDayByCustomer] done rebuilding models\n")
 }
 
 func tryfunc(w string, v []TimeEntry, wg *sync.WaitGroup, m *TimeEntrySyncMap[DayByCustomer], customerId int) {

@@ -1,4 +1,5 @@
-package timeprocessing
+package util
+
 import (
 	"fmt"
 	"github.com/talbx/go-clockodo/pkg/model"
@@ -7,7 +8,7 @@ import (
 	"time"
 )
 
-type TimeProcessor interface {
+type Processor interface {
 	Process(mode string, last int) error
 }
 

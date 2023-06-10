@@ -15,11 +15,11 @@ const apiRoot string = "https://my.clockodo.com/api/"
 func CallApi[R model.TimeEntriesResponse | model.ClockResponse | model.Customer](endpoint string, strukt *R) (int, error) {
 	s := time.Now()
 	ep := strings.Split(endpoint, "?")[0]
-	SugaredLogger.Infof("[CallApi] calling clocko:do API %v", ep)
+	SugaredLogger.Debugf("[CallApi] calling clocko:do API %v", ep)
 	response, err := getAndDelete("GET", endpoint, strukt)
 	e := time.Now()
 	duration := e.Sub(s).Milliseconds()
-	SugaredLogger.Infof("[CallApi] done calling clocko:do API %v in %vms", ep, duration)
+	SugaredLogger.Debugf("[CallApi] done calling clocko:do API %v in %vms", ep, duration)
 	return response, err
 }
 

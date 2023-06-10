@@ -25,10 +25,10 @@ func (factory ClockodoCommandFactory) Create(cmd string) timeprocessing.TimeProc
 		os.Exit(1) // Handle errors reading the config file
 	}
 	we, _ := util.GetFlags().GetBool("withEarnings")
-	util.SugaredLogger.Infof("with earnings %v", we)
+	util.SugaredLogger.Debugf("with earnings %v", we)
 	intercept.ClockodoConfig.WithRevenue = we
-	util.SugaredLogger.Infof("%+v", intercept.ClockodoConfig)
-	return timeprocessing.WeekProcessor{}
+	util.SugaredLogger.Debugf("%+v", intercept.ClockodoConfig)
+	return timeprocessing.TimeProcessor{}
 }
 
 var instance Factory

@@ -1,4 +1,4 @@
-package timeprocessing
+package util
 
 import (
 	"strconv"

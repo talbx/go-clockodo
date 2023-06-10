@@ -22,8 +22,6 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 }
 
-
-
 func Execute() {
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "enable verbose logging")
 	err := rootCmd.Execute()
@@ -40,12 +38,16 @@ func Process(cmd *cobra.Command, args []string) {
 	util.SugaredLogger.Infof("[CMD] processing command %v", cmd.Use)
 	last, err := cmd.Flags().GetInt("last")
 	if err != nil {
-		
+
 		util.SugaredLogger.Warn("No >last< param provided. Will use default >l0<")
 		last = 0
 	}
+	loglevel := "info"
 	verbose, err := cmd.Flags().GetBool("verbose")
-	util.SugaredLogger.Warnf("loglevel set to verbose: %v", verbose)
+	if verbose {
+		loglevel = "verbose"
+	}
+	util.SugaredLogger.Infof("the loglevel is %v", loglevel)
 	err = factory.Create(cmd.Use).Process(cmd.Use, last)
 	if err != nil {
 		util.SugaredLogger.Fatal(err)

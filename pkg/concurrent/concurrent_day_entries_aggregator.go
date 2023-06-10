@@ -26,10 +26,10 @@ func (c ConcurrentDayEntriesAggregator) Aggregate() *map[string][]TimeEntry {
 		workerCount++
 		go f(te, weekDayMap, &wg, i)
 	}
-	util.SugaredLogger.Infof("[GroupEntriesByDay] using %v worker threads to match time entries its weekdays\n", workerCount)
+	util.SugaredLogger.Debugf("[GroupEntriesByDay] using %v worker threads to match time entries its weekdays\n", workerCount)
 	wg.Wait()
 	end := time.Now()
 	t := end.Sub(start)
-	util.SugaredLogger.Infof("[GroupEntriesByDay] done matching time entries its weekdays in %v microseconds (%v seconds)\n", t.Microseconds(), t.Seconds())
+	util.SugaredLogger.Debugf("[GroupEntriesByDay] done matching time entries its weekdays in %v microseconds (%v seconds)\n", t.Microseconds(), t.Seconds())
 	return weekDayMap.Get()
 }

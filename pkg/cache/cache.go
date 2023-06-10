@@ -27,12 +27,12 @@ func (cache *CustomerNameCache) Get(id int) string {
 
 	defer cache.mutex.Unlock()
 	cache.mutex.Lock()
-	util.SugaredLogger.Infof("[Cache] looking for customerId %v", id)
+	util.SugaredLogger.Debugf("[Cache] looking for customerId %v", id)
 	if name, ok := cache.customerDb.Load(id); ok {
-		util.SugaredLogger.Infof("[Cache] found customerId %v in cache: %v", id, name)
+		util.SugaredLogger.Debugf("[Cache] found customerId %v in cache: %v", id, name)
 		return name.(string)
 	}
-	util.SugaredLogger.Infof("[Cache] never saw customerId %v before; will ask API", id)
+	util.SugaredLogger.Debugf("[Cache] never saw customerId %v before; will ask API", id)
 	name := cache.getCustomerName(id)
 	cache.customerDb.Store(id, name)
 	return name

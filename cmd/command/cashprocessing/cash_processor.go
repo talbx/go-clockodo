@@ -22,7 +22,7 @@ func RevenueToANRevenue(revenue *money.Money) {
 		util.SugaredLogger.Error("There was an error calculating the AN revenue", err)
 	}
 
-	util.SugaredLogger.Infof("Your actual revenue is %v after margin of %v was subtracted from raw revenue of %v", myRevenue.Display(), minRevenue.Display(), revenue.Display())
+	util.SugaredLogger.Debugf("Your actual revenue is %v after margin of %v was subtracted from raw revenue of %v", myRevenue.Display(), minRevenue.Display(), revenue.Display())
 
 }
 

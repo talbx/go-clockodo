@@ -20,7 +20,7 @@ func determineLogLevel() zap.AtomicLevel{
 	if verbose {
 		lvl.SetLevel(zap.DebugLevel)
 	} else {
-		lvl.SetLevel(zap.WarnLevel)
+		lvl.SetLevel(zap.InfoLevel)
 	}
 	return lvl
 }
