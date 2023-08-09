@@ -38,7 +38,6 @@ func Process(cmd *cobra.Command, args []string) {
 	util.SugaredLogger.Infof("[CMD] processing command %v", cmd.Use)
 	last, err := cmd.Flags().GetInt("last")
 	if err != nil {
-
 		util.SugaredLogger.Warn("No >last< param provided. Will use default >l0<")
 		last = 0
 	}

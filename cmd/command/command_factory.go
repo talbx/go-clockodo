@@ -9,7 +9,7 @@ import (
 )
 
 type Factory interface {
-	Create(cmd string) timeprocessing.TimeProcessor
+	Create(cmd string) util.Processor
 }
 
 type Command interface {
@@ -18,7 +18,7 @@ type Command interface {
 
 type ClockodoCommandFactory struct{}
 
-func (factory ClockodoCommandFactory) Create(cmd string) timeprocessing.TimeProcessor {
+func (factory ClockodoCommandFactory) Create(cmd string) util.Processor {
 	err := intercept.ConfigReaderInterceptor{}.Intercept()
 	if err != nil {
 		util.SugaredLogger.Errorf("no config.yaml could be found. please provide one")
@@ -28,6 +28,11 @@ func (factory ClockodoCommandFactory) Create(cmd string) timeprocessing.TimeProc
 	util.SugaredLogger.Debugf("with earnings %v", we)
 	intercept.ClockodoConfig.WithRevenue = we
 	util.SugaredLogger.Debugf("%+v", intercept.ClockodoConfig)
+
+	if cmd == "today" {
+		return timeprocessing.TodayProcessor{}
+	}
+
 	return timeprocessing.TimeProcessor{}
 }
 
