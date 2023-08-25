@@ -2,6 +2,7 @@ package timeprocessing
 
 import (
 	"fmt"
+	"log/slog"
 	"sort"
 	"time"
 
@@ -102,11 +103,11 @@ func sortWeekdayMap(mappy map[string][]DayByCustomer) map[string][]DayByCustomer
 
 		prev, err := time.Parse("02.01.2006", keys[i])
 		if err != nil {
-			util.SugaredLogger.Error("error parsing date %v", keys[i], err)
+			slog.Error("error parsing date %v", keys[i], err)
 		}
 		curr, err := time.Parse("02.01.2006", keys[j])
 		if err != nil {
-			util.SugaredLogger.Error("error parsing date %v", keys[j], err)
+			slog.Error("error parsing date %v", keys[j], err)
 		}
 
 		return prev.Before(curr)

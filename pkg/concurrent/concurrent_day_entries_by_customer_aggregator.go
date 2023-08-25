@@ -3,7 +3,7 @@ package concurrent
 import (
 	"fmt"
 	. "github.com/talbx/go-clockodo/pkg/model"
-	"github.com/talbx/go-clockodo/pkg/util"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -28,9 +28,9 @@ func p_cdbc(mappy *map[string][]TimeEntry, customerId int, syncMap *TimeEntrySyn
 		wg.Add(1)
 		go tryfunc(w, v, &wg, syncMap, customerId)
 	}
-	util.SugaredLogger.Debugf("[CreateDayByCustomer] using %v worker threads to rebuild models\n", len(*mappy))
+	slog.Debug(fmt.Sprintf("[CreateDayByCustomer] using %v worker threads to rebuild models\n", len(*mappy)))
 	wg.Wait()
-	util.SugaredLogger.Debugf("[CreateDayByCustomer] done rebuilding models\n")
+	slog.Debug("[CreateDayByCustomer] done rebuilding models\n")
 }
 
 func tryfunc(w string, v []TimeEntry, wg *sync.WaitGroup, m *TimeEntrySyncMap[DayByCustomer], customerId int) {

@@ -1,6 +1,8 @@
 package command
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/talbx/go-clockodo/cmd/command/timeprocessing"
@@ -21,13 +23,13 @@ type ClockodoCommandFactory struct{}
 func (factory ClockodoCommandFactory) Create(cmd string) util.Processor {
 	err := intercept.ConfigReaderInterceptor{}.Intercept()
 	if err != nil {
-		util.SugaredLogger.Errorf("no config.yaml could be found. please provide one")
+		slog.Error("no config.yaml could be found. please provide one")
 		os.Exit(1) // Handle errors reading the config file
 	}
 	we, _ := util.GetFlags().GetBool("withEarnings")
-	util.SugaredLogger.Debugf("with earnings %v", we)
+	slog.Debug(fmt.Sprintf("with earnings %v", we))
 	intercept.ClockodoConfig.WithRevenue = we
-	util.SugaredLogger.Debugf("%+v", intercept.ClockodoConfig)
+	slog.Debug(fmt.Sprintf("%+v", intercept.ClockodoConfig))
 
 	if cmd == "today" {
 		return timeprocessing.TodayProcessor{}

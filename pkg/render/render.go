@@ -2,14 +2,13 @@ package render
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/Rhymond/go-money"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/talbx/go-clockodo/cmd/command/cashprocessing"
-	"github.com/talbx/go-clockodo/pkg/intercept"
 	"github.com/talbx/go-clockodo/pkg/model"
 	. "github.com/talbx/go-clockodo/pkg/model"
 	"github.com/talbx/go-clockodo/pkg/util"
@@ -33,11 +32,6 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 	for _, key := range keys {
 		for _, entry := range mappy[key] {
 			alterTime(&entry)
-			entry.AggregatedRevenue = money.New(0, money.EUR)
-			if intercept.ClockodoConfig.WithRevenue {
-				cashprocessing.CashProcess(&entry)
-				totalRevenue, _ = totalRevenue.Add(entry.AggregatedRevenue)
-			}
 			taskCount += len(strings.Split(entry.AggregatedTasks, ","))
 			tt += entry.TotalTime
 			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, fmt.Sprintf("(%v) - %v", entry.RoundedTime, entry.AggregatedTime), entry.AggregatedRevenue.Display()}, rowConfigAutoMerge)
@@ -55,10 +49,6 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 		{Number: 7, AutoMerge: true},
 	})
 
-	if intercept.ClockodoConfig.WithRevenue && intercept.ClockodoConfig.Revenue.RevenueStyle == "AN" {
-		cashprocessing.RevenueToANRevenue(totalRevenue)
-	}
-
 	th, tm := util.DurationToHM(tt)
 	t.AppendSeparator()
 	t.SetStyle(table.StyleLight)
@@ -66,7 +56,7 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 	t.Render()
 
 	h, m := clockProcessor(&clock)
-	util.SugaredLogger.Infof("Also, you have a task running for %vh:%vm right now.\n", h, m)
+	slog.Info(fmt.Sprintf("Also, you have a task running for %vh:%vm right now.\n", h, m))
 }
 
 func alterTime(entry *DayByCustomer) {

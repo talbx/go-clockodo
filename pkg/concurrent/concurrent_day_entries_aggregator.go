@@ -1,8 +1,9 @@
 package concurrent
 
 import (
+	"fmt"
 	. "github.com/talbx/go-clockodo/pkg/model"
-	"github.com/talbx/go-clockodo/pkg/util"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -26,10 +27,10 @@ func (c ConcurrentDayEntriesAggregator) Aggregate() *map[string][]TimeEntry {
 		workerCount++
 		go f(te, weekDayMap, &wg, i)
 	}
-	util.SugaredLogger.Debugf("[GroupEntriesByDay] using %v worker threads to match time entries its weekdays\n", workerCount)
+	slog.Debug(fmt.Sprintf("[GroupEntriesByDay] using %v worker threads to match time entries its weekdays\n", workerCount))
 	wg.Wait()
 	end := time.Now()
 	t := end.Sub(start)
-	util.SugaredLogger.Debugf("[GroupEntriesByDay] done matching time entries its weekdays in %v microseconds (%v seconds)\n", t.Microseconds(), t.Seconds())
+	slog.Debug(fmt.Sprintf("[GroupEntriesByDay] done matching time entries its weekdays in %v microseconds (%v seconds)\n", t.Microseconds(), t.Seconds()))
 	return weekDayMap.Get()
 }

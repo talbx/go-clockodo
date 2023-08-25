@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
@@ -33,12 +35,12 @@ func Execute() {
 func Process(cmd *cobra.Command, args []string) {
 	s := time.Now()
 	util.StoreFlags(cmd.Flags())
-	util.CreateSugaredLogger()
+	util.ConfigureLogger()
 	var factory = *command.CreateCommandFactory()
-	util.SugaredLogger.Infof("[CMD] processing command %v", cmd.Use)
+	slog.Info(fmt.Sprintf("[CMD] processing command %v", cmd.Use))
 	last, err := cmd.Flags().GetInt("last")
 	if err != nil {
-		util.SugaredLogger.Warn("No >last< param provided. Will use default >l0<")
+		slog.Warn("No >last< param provided. Will use default >l0<")
 		last = 0
 	}
 	loglevel := "info"
@@ -46,13 +48,13 @@ func Process(cmd *cobra.Command, args []string) {
 	if verbose {
 		loglevel = "verbose"
 	}
-	util.SugaredLogger.Infof("the loglevel is %v", loglevel)
+	slog.Info(fmt.Sprintf("the loglevel is %v", loglevel))
 	err = factory.Create(cmd.Use).Process(cmd.Use, last)
 	if err != nil {
-		util.SugaredLogger.Fatal(err)
+		slog.Error("Some error happened", err)
 	}
 	e := time.Now()
-	util.SugaredLogger.Infof("[CMD] the process is done and took %vms", e.Sub(s).Milliseconds())
+	slog.Info(fmt.Sprintf("[CMD] the process is done and took %vms", e.Sub(s).Milliseconds()))
 }
 
 func init() {

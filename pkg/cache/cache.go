@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/talbx/go-clockodo/pkg/model"
 	"github.com/talbx/go-clockodo/pkg/util"
+	"log/slog"
 	"sync"
 )
 
@@ -27,12 +28,12 @@ func (cache *CustomerNameCache) Get(id int) string {
 
 	defer cache.mutex.Unlock()
 	cache.mutex.Lock()
-	util.SugaredLogger.Debugf("[Cache] looking for customerId %v", id)
+	slog.Debug(fmt.Sprintf("[Cache] looking for customerId %v", id))
 	if name, ok := cache.customerDb.Load(id); ok {
-		util.SugaredLogger.Debugf("[Cache] found customerId %v in cache: %v", id, name)
+		slog.Debug(fmt.Sprintf("[Cache] found customerId %v in cache: %v", id, name))
 		return name.(string)
 	}
-	util.SugaredLogger.Debugf("[Cache] never saw customerId %v before; will ask API", id)
+	slog.Debug(fmt.Sprintf("[Cache] never saw customerId %v before; will ask API", id))
 	name := cache.getCustomerName(id)
 	cache.customerDb.Store(id, name)
 	return name

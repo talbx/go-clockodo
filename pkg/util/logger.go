@@ -2,35 +2,31 @@ package util
 
 import (
 	"log"
+	"log/slog"
 	"os"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var SugaredLogger *zap.SugaredLogger
 
-func determineLogLevel() zap.AtomicLevel{
+func determineLogLevel() slog.Level {
 	flags := GetFlags()
 	verbose, err := flags.GetBool("verbose")
 	if nil != err {
 		log.Fatal(err)
 	}
-	lvl := zap.NewAtomicLevel()
 	if verbose {
-		lvl.SetLevel(zap.DebugLevel)
-	} else {
-		lvl.SetLevel(zap.InfoLevel)
+		return slog.LevelDebug
 	}
-	return lvl
+	return slog.LevelInfo
 }
 
-func CreateSugaredLogger() *zap.SugaredLogger {
-	logger := zap.New(zapcore.NewCore(
-		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
-		zapcore.Lock(os.Stdout),
-		determineLogLevel(),
-	))
-	SugaredLogger = logger.Sugar()
-	return SugaredLogger
+func ConfigureLogger() {
+	loggingLevel := new(slog.LevelVar)
+	level := determineLogLevel()
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: loggingLevel}))
+	slog.SetDefault(logger)
+	loggingLevel.Set(level)
 }
