@@ -38,8 +38,3 @@ jobs:
         run: go test ./... -short -coverprofile=cov.out
       - name: build executable
         run: go build .
-      - name: sonar
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
