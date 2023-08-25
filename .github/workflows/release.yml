@@ -1,4 +1,4 @@
-name: open-window-release
+name: go-clockodo-release
 on:
   push:
     tags:

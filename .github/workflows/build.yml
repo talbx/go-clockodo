@@ -1,4 +1,4 @@
-name: open-window-build
+name: go-clockodo-build
 on:
   push:
     branches: [ main ]
