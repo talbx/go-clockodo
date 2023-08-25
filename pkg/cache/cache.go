@@ -42,6 +42,9 @@ func (cache *CustomerNameCache) Get(id int) string {
 func (cache *CustomerNameCache) getCustomerName(id int) string {
 	var customer model.Customer
 	cal := fmt.Sprintf("v2/customers/%v", id)
-	util.CallApi(cal, &customer)
+	_, err := util.CallApi(cal, &customer)
+	if err != nil {
+		slog.Error(fmt.Sprint(err))
+	}
 	return customer.Name
 }

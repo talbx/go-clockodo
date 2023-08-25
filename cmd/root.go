@@ -45,6 +45,9 @@ func Process(cmd *cobra.Command, args []string) {
 	}
 	loglevel := "info"
 	verbose, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		slog.Error("err:", err)
+	}
 	if verbose {
 		loglevel = "verbose"
 	}

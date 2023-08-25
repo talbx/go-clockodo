@@ -61,7 +61,7 @@ func ProcessClock(clock *model.ClockResponse) (hours int, minutes int) {
 	// running clock
 	if clock.Running.RunningSince != "" && clock.Running.RunningSince > "0" {
 		t, _ := time.Parse("2006-01-02T15:04:05Z", clock.Running.RunningSince)
-		diff := time.Now().Sub(t)
+		diff := time.Since(t)
 		hours = int(diff.Hours())
 		minutes = int(diff.Minutes()) % 60
 	}
