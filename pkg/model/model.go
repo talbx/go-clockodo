@@ -1,7 +1,5 @@
 package model
 
-import "github.com/Rhymond/go-money"
-
 type Customer struct {
 	CustomerName `json:"customer"`
 }
@@ -41,33 +39,16 @@ type Running struct {
 }
 
 type DayByCustomer struct {
-	Customer          string
-	Tasks             string
-	TotalTime         int
-	AggregatedTime    string
-	CustomerId        int
-	AggregatedTasks   string
-	RoundedTime       string
-	AggregatedRevenue *money.Money
+	Customer        string
+	Tasks           string
+	TotalTime       int
+	AggregatedTime  string
+	CustomerId      int
+	AggregatedTasks string
+	RoundedTime     string
 }
 
 type GoClockodoConfig struct {
 	ApiKey  string
 	ApiUser string
-	Revenue Revenue `yaml:"revenue"`
-	WithRevenue bool
 }
-
-type Revenue struct {
-	HourlyRate int `yaml:"hourlyRate"`
-	RevenueStyle string`yaml:"revenueStyle"`
-	Margin int `yaml:"margin"`
-	Salary int `yaml:"salary"`
-}
-
-type RevenueStyle int
-
-const (
-	AN RevenueStyle = iota
-	FREE
-)

@@ -28,10 +28,5 @@ func ReadConfig(config *model.GoClockodoConfig) error {
 	}
 	config.ApiKey = viper.GetString("apiKey")
 	config.ApiUser = viper.GetString("apiUser")
-	config.Revenue.HourlyRate = viper.GetInt("hourlyRate")
-	config.Revenue.Salary = viper.GetInt("salary")
-	config.Revenue.Margin = viper.GetInt("margin")
-	config.Revenue.RevenueStyle = viper.GetString("revenueStyle")
-
 	return nil
 }

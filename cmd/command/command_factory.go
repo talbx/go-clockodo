@@ -28,7 +28,6 @@ func (factory ClockodoCommandFactory) Create(cmd string) util.Processor {
 	}
 	we, _ := util.GetFlags().GetBool("withEarnings")
 	slog.Debug(fmt.Sprintf("with earnings %v", we))
-	intercept.ClockodoConfig.WithRevenue = we
 	slog.Debug(fmt.Sprintf("%+v", intercept.ClockodoConfig))
 
 	if cmd == "today" {

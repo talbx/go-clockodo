@@ -27,7 +27,7 @@ func (p TimeProcessor) Process(mode string, last int) error {
 	_, err := CallApi(query, &repo)
 
 	if err != nil {
-		SugaredLogger.Fatal(err)
+		slog.Error(fmt.Sprint(err))
 	}
 
 	custIds := extractCustomerIdsFromTimeEntries(repo)
@@ -42,7 +42,7 @@ func (p TimeProcessor) Process(mode string, last int) error {
 	clo, err := getCurrentClock()
 
 	if err != nil {
-		SugaredLogger.Fatal(err)
+		slog.Error(fmt.Sprint(err))
 	}
 
 	for _, v := range *result {

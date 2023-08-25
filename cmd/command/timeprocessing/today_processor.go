@@ -5,6 +5,7 @@ import (
 	. "github.com/talbx/go-clockodo/pkg/model"
 	. "github.com/talbx/go-clockodo/pkg/util"
 	"golang.design/x/clipboard"
+	"log/slog"
 	"strings"
 	"time"
 )
@@ -37,8 +38,8 @@ func (p TodayProcessor) Process(mode string, last int) error {
 	temp := strings.Join(desc, ",")
 	tasksOfTheDay := strings.ReplaceAll(temp, ",,", ",")
 
-	SugaredLogger.Infof("your tasks of the day were %v.", tasksOfTheDay)
-	SugaredLogger.Info("the tasks were added to your clipboard!")
+	slog.Info(fmt.Sprintf("your tasks of the day were %v.", tasksOfTheDay))
+	slog.Info("the tasks were added to your clipboard!")
 
 	err = clipboard.Init()
 	if err != nil {

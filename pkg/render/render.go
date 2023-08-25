@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rhymond/go-money"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/talbx/go-clockodo/pkg/model"
 	. "github.com/talbx/go-clockodo/pkg/model"
@@ -18,12 +17,11 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"#", "ID", "Customer", "Tasks", "Times", "Revenue"})
+	t.AppendHeader(table.Row{"#", "ID", "Customer", "Tasks", "Times"})
 	rowConfigAutoMerge := table.RowConfig{AutoMerge: true}
 
 	taskCount := 0
 	tt := 0
-	totalRevenue := money.New(0, money.EUR)
 	keys := make([]string, 0, len(mappy))
 	for k := range mappy {
 		keys = append(keys, k)
@@ -34,7 +32,7 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 			alterTime(&entry)
 			taskCount += len(strings.Split(entry.AggregatedTasks, ","))
 			tt += entry.TotalTime
-			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, fmt.Sprintf("(%v) - %v", entry.RoundedTime, entry.AggregatedTime), entry.AggregatedRevenue.Display()}, rowConfigAutoMerge)
+			t.AppendRow(table.Row{key, entry.CustomerId, entry.Customer, entry.AggregatedTasks, fmt.Sprintf("(%v) - %v", entry.RoundedTime, entry.AggregatedTime)}, rowConfigAutoMerge)
 			t.AppendSeparator()
 		}
 	}
@@ -52,7 +50,7 @@ func Render(mappy map[string][]DayByCustomer, clock model.ClockResponse, clockPr
 	th, tm := util.DurationToHM(tt)
 	t.AppendSeparator()
 	t.SetStyle(table.StyleLight)
-	t.AppendFooter(table.Row{"TOTAL", "", "", fmt.Sprintf("Total tasks: %v", taskCount), fmt.Sprintf("%v:%v", util.AddLeadingZero(th), util.AddLeadingZero(tm)), totalRevenue.Display()})
+	t.AppendFooter(table.Row{"TOTAL", "", "", fmt.Sprintf("Total tasks: %v", taskCount), fmt.Sprintf("%v:%v", util.AddLeadingZero(th), util.AddLeadingZero(tm))})
 	t.Render()
 
 	h, m := clockProcessor(&clock)

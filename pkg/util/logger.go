@@ -4,11 +4,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
-
-	"go.uber.org/zap"
 )
-
-var SugaredLogger *zap.SugaredLogger
 
 func determineLogLevel() slog.Level {
 	flags := GetFlags()

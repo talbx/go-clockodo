@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/talbx/go-clockodo/pkg/intercept"
 	"github.com/talbx/go-clockodo/pkg/model"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -15,11 +16,11 @@ const apiRoot string = "https://my.clockodo.com/api/"
 func CallApi[R model.TimeEntriesResponse | model.ClockResponse | model.Customer](endpoint string, strukt *R) (int, error) {
 	s := time.Now()
 	ep := strings.Split(endpoint, "?")[0]
-	SugaredLogger.Debugf("[CallApi] calling clocko:do API %v", ep)
+	slog.Debug(fmt.Sprintf("[CallApi] calling clocko:do API %v", ep))
 	response, err := getAndDelete("GET", endpoint, strukt)
 	e := time.Now()
 	duration := e.Sub(s).Milliseconds()
-	SugaredLogger.Debugf("[CallApi] done calling clocko:do API %v in %vms", ep, duration)
+	slog.Debug(fmt.Sprintf("[CallApi] done calling clocko:do API %v in %vms", ep, duration))
 	return response, err
 }
 
@@ -29,7 +30,7 @@ func getAndDelete[R model.TimeEntriesResponse | model.ClockResponse | model.Cust
 	config := intercept.ClockodoConfig
 	req, err := http.NewRequest(requestMethod, fmt.Sprintf("%s%s", apiRoot, endpoint), nil)
 	if err != nil {
-		SugaredLogger.Panic(err)
+		slog.Error(fmt.Sprint(err))
 	}
 	req.Header.Add("X-ClockodoApiUser", config.ApiUser)
 	req.Header.Add("X-ClockodoApiKey", config.ApiKey)
@@ -38,7 +39,7 @@ func getAndDelete[R model.TimeEntriesResponse | model.ClockResponse | model.Cust
 	//fmt.Println(string(res))
 	resp, err := client.Do(req)
 	if err != nil {
-		SugaredLogger.Panic(err)
+		slog.Error(fmt.Sprint(err))
 	}
 
 	if nil != strukt {
